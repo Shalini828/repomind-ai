@@ -6,3 +6,7 @@ body {
   color: white;
   font-family: Inter, system-ui, sans-serif;
 }
+
+html {
+  scroll-behavior: smooth;
+}

@@ -1,6 +1,7 @@
 import Sidebar from "../components/dashboard/Sidebar";
 import Topbar from "../components/dashboard/Topbar";
 import QuickActions from "../components/dashboard/QuickActions";
+import RecentRepositories from "../components/dashboard/RecentRepositories";
 
 function Dashboard() {
   return (
@@ -15,6 +16,8 @@ function Dashboard() {
         <main className="p-8">
 
           <QuickActions />
+
+          <RecentRepositories />
 
         </main>
 
