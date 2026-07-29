@@ -1,8 +1,31 @@
 import { UploadCloud } from "lucide-react";
+import { useRef } from "react";
 
 function UploadCard() {
+  const fileInputRef = useRef(null);
+
+  const handleBrowseClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    console.log("Selected File:", file);
+  };
+
   return (
     <div className="bg-[#111827] border-2 border-dashed border-slate-700 rounded-3xl p-10 flex flex-col items-center justify-center text-center hover:border-blue-500 transition-all duration-300 min-h-[420px]">
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".zip"
+        className="hidden"
+        onChange={handleFileChange}
+      />
 
       <div className="w-20 h-20 rounded-full bg-blue-600/20 flex items-center justify-center mb-6">
         <UploadCloud size={42} className="text-blue-400" />
@@ -16,7 +39,10 @@ function UploadCard() {
         Upload your repository as a ZIP file to start AI-powered analysis.
       </p>
 
-      <button className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105">
+      <button
+        onClick={handleBrowseClick}
+        className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-xl font-semibold transition-all duration-300 hover:scale-105"
+      >
         Browse Files
       </button>
 

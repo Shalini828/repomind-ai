@@ -1,6 +1,8 @@
+import { Link } from "react-router-dom";
+
 function Navbar() {
   return (
-   <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1220]/80 border-b border-gray-800">
+    <nav className="sticky top-0 z-50 backdrop-blur-lg bg-[#0B1220]/80 border-b border-gray-800">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-8 py-5">
         {/* Logo */}
         <div className="flex items-center gap-3">
@@ -27,18 +29,18 @@ function Navbar() {
           </a>
 
           <a href="#cta" className="hover:text-white transition">
-            Get Started
+            Launch App
           </a>
         </div>
 
         {/* Button */}
 
-        <a
-          href="#cta"
+        <Link
+          to="/upload"
           className="bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-xl font-semibold transition"
         >
-          Get Started
-        </a>
+          Launch App
+        </Link>
       </div>
     </nav>
   );

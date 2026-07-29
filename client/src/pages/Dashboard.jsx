@@ -2,6 +2,8 @@ import Sidebar from "../components/dashboard/Sidebar";
 import Topbar from "../components/dashboard/Topbar";
 import QuickActions from "../components/dashboard/QuickActions";
 import RecentRepositories from "../components/dashboard/RecentRepositories";
+import RepositoryOverview from "../components/dashboard/RepositoryOverview";
+
 
 function Dashboard() {
   return (
@@ -14,6 +16,8 @@ function Dashboard() {
         <Topbar />
 
         <main className="p-8">
+
+          <RepositoryOverview />
 
           <QuickActions />
 

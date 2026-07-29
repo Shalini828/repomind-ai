@@ -1,9 +1,15 @@
+import { useNavigate } from "react-router-dom";
+
 function Hero() {
+  const navigate = useNavigate();
+
   return (
     <section className="max-w-7xl mx-auto px-8 min-h-[85vh] flex items-center">
       <div className="grid lg:grid-cols-2 gap-16 items-center">
+
         {/* Left Section */}
         <div className="space-y-8">
+
           <span className="inline-block px-4 py-2 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 text-sm">
             ✨ Intelligent Context Optimization
           </span>
@@ -22,32 +28,44 @@ function Hero() {
           </p>
 
           <div className="flex gap-5">
-            <button className="bg-blue-600 hover:bg-blue-700 transition px-7 py-4 rounded-xl font-semibold">
-              Upload Repository
+
+            <button
+              onClick={() => navigate("/upload")}
+              className="bg-blue-600 hover:bg-blue-700 px-8 py-4 rounded-xl font-semibold transition hover:scale-105"
+            >
+              Analyze ZIP
             </button>
 
-            <button className="border border-gray-700 hover:border-blue-500 transition px-7 py-4 rounded-xl">
-              Connect GitHub
+            <button
+              onClick={() => navigate("/upload")}
+              className="border border-gray-700 hover:border-blue-500 hover:bg-gray-800 transition px-7 py-4 rounded-xl"
+            >
+              Import from GitHub
             </button>
+
           </div>
+
         </div>
 
         {/* Right Section */}
 
         <div className="flex justify-center">
+
           <div className="w-full max-w-md rounded-3xl bg-[#111827] border border-gray-800 p-8 shadow-2xl">
-            <h3 className="text-xl font-bold mb-6">Token Savings</h3>
+
+            <h3 className="text-xl font-bold mb-6">
+              Token Savings
+            </h3>
 
             <div className="space-y-4">
+
               <div className="flex justify-between">
                 <span className="text-gray-400">Original</span>
-
                 <span>210k Tokens</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-400">Optimized</span>
-
                 <span className="text-green-400">12k Tokens</span>
               </div>
 
@@ -59,10 +77,16 @@ function Hero() {
                 94%
               </h1>
 
-              <p className="text-center text-gray-400">Token Reduction</p>
+              <p className="text-center text-gray-400">
+                Token Reduction
+              </p>
+
             </div>
+
           </div>
+
         </div>
+
       </div>
     </section>
   );
