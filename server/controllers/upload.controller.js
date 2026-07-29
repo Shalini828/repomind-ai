@@ -1,3 +1,4 @@
+const axios = require("axios");
 exports.analyzeGithubRepo = async (req, res) => {
   try {
     const { repoUrl } = req.body;
@@ -8,12 +9,14 @@ exports.analyzeGithubRepo = async (req, res) => {
         message: "Repository URL is required",
       });
     }
-
+const parts = repoUrl.split("/");
+const owner = parts[3];
+const repo = parts[4];
+const response = await axios.get(`https://api.github.com/repos/${owner}/${repo}/contents`);
     return res.status(200).json({
       success: true,
       message: "Repository received successfully",
-      repoUrl,
-      status: "analysis_started",
+      files: response.data,
     });
   } catch (error) {
     return res.status(500).json({
