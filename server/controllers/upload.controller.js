@@ -10,21 +10,29 @@ exports.analyzeGithubRepo = async (req, res) => {
         message: "Repository URL is required",
       });
     }
-let owner, repo;
-try {
-  const urlObj = new URL(repoUrl);
-  const pathParts = urlObj.pathname.split("/").filter(Boolean);
-  owner = pathParts[0];
-  repo = pathParts[1]?.replace(/\.git$/, "");
-} catch (err) {
-  return res.status(400).json({
-    success: false,
-    message: "Invalid GitHub URL format",
-  });
-}
+    let owner, repo;
+    try {
+      const urlObj = new URL(repoUrl);
+      const pathParts = urlObj.pathname.split("/").filter(Boolean);
+      owner = pathParts[0];
+      repo = pathParts[1]?.replace(/\.git$/, "");
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid GitHub URL format",
+      });
+    }
 
     // Clone Repository
     const repository = await githubService.cloneRepository(repoUrl);
+
+    global.currentRepository = {
+      repoUrl,
+      localRepoPath: repository.localPath,
+    };
+
+    console.log("✅ Saved current repository:");
+    console.log(global.currentRepository);
 
     return res.status(200).json({
       success: true,
@@ -32,7 +40,6 @@ try {
       repository,
       status: "analysis_started",
     });
-
   } catch (error) {
     console.error(error);
 

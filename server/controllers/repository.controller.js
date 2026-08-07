@@ -1,30 +1,99 @@
 const githubApiService = require("../services/githubApi.service");
 const repositoryScanner = require("../services/repositoryScanner.service");
 const frameworkDetector = require("../services/frameworkDetector.service");
-const path = require("path");
+const fileTreeService = require("../services/fileTree.service");
+
+const readmeService = require("../services/readme.service");
+const licenseService = require("../services/license.service");
+const gitignoreService = require("../services/gitignore.service");
+const dependencyService = require("../services/dependency.service");
+const languageService = require("../services/language.service");
+const repositoryHealthService = require("../services/repositoryHealth.service");
+const summaryService = require("../services/summary.service");
 
 exports.getRepository = async (req, res) => {
   try {
-    const repoUrl = "https://github.com/facebook/react";
 
-    // Fetch GitHub metadata
+    if (!global.currentRepository) {
+      return res.status(400).json({
+        success: false,
+        message: "No repository has been analyzed yet.",
+      });
+    }
+
+    const repoUrl = global.currentRepository.repoUrl;
+    const localRepoPath = global.currentRepository.localRepoPath;
+
+    // GitHub Metadata
     const repository = await githubApiService.getRepositoryDetails(repoUrl);
 
-    // Path of cloned repository
-    const localRepoPath = path.join(__dirname, "..", "uploads", "react-react");
-
+    // Local Scan
     const scanResult = repositoryScanner.scanDirectory(localRepoPath);
 
+    // Framework Detection
     const framework = frameworkDetector.detectFramework(localRepoPath);
 
-    repository.files = scanResult.files;
-    repository.folders = scanResult.folders;
+    // File Tree
+    const tree = fileTreeService.buildTree(localRepoPath);
 
-    repository.framework = framework.framework;
-    repository.packageManager = framework.packageManager;
-    repository.technologies = framework.technologies;
+    // README
+    const readme = readmeService.analyzeReadme(localRepoPath);
 
-    return res.status(200).json(repository);
+    // License
+    const license = licenseService.detectLicense(localRepoPath);
+
+    // Git Ignore
+    const gitignore = gitignoreService.checkGitIgnore(localRepoPath);
+
+    // Dependencies
+    const dependencies = dependencyService.analyzeDependencies(localRepoPath);
+
+    // Languages
+    const languages = languageService.detectLanguages(localRepoPath);
+
+    // Repository Health
+    const health = repositoryHealthService.calculateHealth({
+      readme,
+      license,
+      gitignore,
+      dependencies,
+    });
+
+    // AI Summary
+    const summary = summaryService.generateSummary({
+      repository,
+      scan: scanResult,
+      framework,
+      health,
+    });
+
+    return res.status(200).json({
+      ...repository,
+
+      files: scanResult.files,
+      folders: scanResult.folders,
+
+      framework: framework.framework,
+      packageManager: framework.packageManager,
+      technologies: framework.technologies,
+
+      tree,
+
+      readme,
+
+      license,
+
+      gitignore,
+
+      dependencies,
+
+      languages,
+
+      health,
+
+      summary,
+    });
+
   } catch (error) {
     console.error(error);
 
