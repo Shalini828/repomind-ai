@@ -1,4 +1,4 @@
-const githubService = require("../services/github.service");
+const axios = require("axios");
 
 exports.analyzeGithubRepo = async (req, res) => {
   try {
@@ -10,6 +10,7 @@ exports.analyzeGithubRepo = async (req, res) => {
         message: "Repository URL is required",
       });
     }
+
     let owner, repo;
     try {
       const urlObj = new URL(repoUrl);
@@ -23,25 +24,33 @@ exports.analyzeGithubRepo = async (req, res) => {
       });
     }
 
-    // Clone Repository
-    const repository = await githubService.cloneRepository(repoUrl);
-
-    global.currentRepository = {
-      repoUrl,
-      localRepoPath: repository.localPath,
-    };
-
-    console.log("✅ Saved current repository:");
-    console.log(global.currentRepository);
-
+    if (!owner || !repo) {
+      return res.status(400).json({
+        success: false,
+        message: "Could not extract owner/repo from URL",
+      });
+    }
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/contents`,
+      { timeout: 5000 }
+    );
+const cleanedFiles = response.data.map((file) => ({
+      name: file.name,
+      path: file.path,
+      type: file.type,
+}));
     return res.status(200).json({
       success: true,
-      message: "Repository cloned successfully",
-      repository,
-      status: "analysis_started",
+      message: "Repository fetched successfully",
+      files: cleanedFiles,
     });
   } catch (error) {
-    console.error(error);
+    if (error.code === "ECONNABORTED") {
+      return res.status(504).json({
+        success: false,
+        message: "GitHub API request timed out. Please try again.",
+      });
+    }
 
     return res.status(500).json({
       success: false,
