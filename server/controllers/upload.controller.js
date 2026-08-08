@@ -1,4 +1,34 @@
 const axios = require("axios");
+const fetchRepoContents = async (owner, repo, path = "") => {
+  const response = await axios.get(
+    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
+    { timeout: 5000 }
+  );
+
+  const items = response.data;
+  let allFiles = [];
+
+  for (const item of items) {
+    if (item.type === "file") {
+      allFiles.push({
+        name: item.name,
+        path: item.path,
+        type: "file",
+      });
+    } else if (item.type === "dir") {
+      allFiles.push({
+        name: item.name,
+        path: item.path,
+        type: "dir",
+      });
+      // yahi hai recursion - function khud ko dubara call kar raha hai
+      const nestedFiles = await fetchRepoContents(owner, repo, item.path);
+      allFiles = allFiles.concat(nestedFiles);
+    }
+  }
+
+  return allFiles;
+};
 
 exports.analyzeGithubRepo = async (req, res) => {
   try {
@@ -30,15 +60,7 @@ exports.analyzeGithubRepo = async (req, res) => {
         message: "Could not extract owner/repo from URL",
       });
     }
-    const response = await axios.get(
-      `https://api.github.com/repos/${owner}/${repo}/contents`,
-      { timeout: 5000 }
-    );
-const cleanedFiles = response.data.map((file) => ({
-      name: file.name,
-      path: file.path,
-      type: file.type,
-}));
+const cleanedFiles = await fetchRepoContents(owner,repo);
     return res.status(200).json({
       success: true,
       message: "Repository fetched successfully",
