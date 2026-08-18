@@ -1,34 +1,4 @@
-const axios = require("axios");
-const fetchRepoContents = async (owner, repo, path = "") => {
-  const response = await axios.get(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-    { timeout: 5000 }
-  );
-
-  const items = response.data;
-  let allFiles = [];
-
-  for (const item of items) {
-    if (item.type === "file") {
-      allFiles.push({
-        name: item.name,
-        path: item.path,
-        type: "file",
-      });
-    } else if (item.type === "dir") {
-      allFiles.push({
-        name: item.name,
-        path: item.path,
-        type: "dir",
-      });
-      // yahi hai recursion - function khud ko dubara call kar raha hai
-      const nestedFiles = await fetchRepoContents(owner, repo, item.path);
-      allFiles = allFiles.concat(nestedFiles);
-    }
-  }
-
-  return allFiles;
-};
+const githubService = require("../services/github.service");
 
 exports.analyzeGithubRepo = async (req, res) => {
   try {
@@ -41,42 +11,63 @@ exports.analyzeGithubRepo = async (req, res) => {
       });
     }
 
-    let owner, repo;
-    try {
-      const urlObj = new URL(repoUrl);
-      const pathParts = urlObj.pathname.split("/").filter(Boolean);
-      owner = pathParts[0];
-      repo = pathParts[1]?.replace(/\.git$/, "");
-    } catch (err) {
+    // Validate GitHub URL
+    const regex =
+      /^https?:\/\/github\.com\/([^/]+)\/([^/]+?)(\.git)?\/?$/;
+
+    const match = repoUrl.trim().match(regex);
+
+    if (!match) {
       return res.status(400).json({
         success: false,
-        message: "Invalid GitHub URL format",
+        message: "Invalid GitHub repository URL",
       });
     }
 
-    if (!owner || !repo) {
-      return res.status(400).json({
-        success: false,
-        message: "Could not extract owner/repo from URL",
-      });
-    }
-const cleanedFiles = await fetchRepoContents(owner,repo);
+    const owner = match[1];
+    const repo = match[2];
+
+    console.log("=================================");
+    console.log("🚀 Starting repository analysis");
+    console.log("Owner:", owner);
+    console.log("Repository:", repo);
+    console.log("URL:", repoUrl);
+    console.log("=================================");
+
+    // Clone repository locally.
+    // This does NOT use GitHub REST API.
+    const cloneResult = await githubService.cloneRepository(repoUrl);
+
+    // Store current repository for analysis
+    global.currentRepository = {
+      repoUrl,
+      localRepoPath: cloneResult.localPath,
+      owner: cloneResult.owner,
+      repo: cloneResult.repo,
+      repoName: cloneResult.repoName,
+    };
+
+    console.log("=================================");
+    console.log("✅ Repository ready for analysis");
+    console.log("Local path:", cloneResult.localPath);
+    console.log("=================================");
+
     return res.status(200).json({
       success: true,
-      message: "Repository fetched successfully",
-      files: cleanedFiles,
+      message: "Repository cloned successfully",
+      repository: {
+        owner: cloneResult.owner,
+        repo: cloneResult.repo,
+        name: cloneResult.repoName,
+      },
+      localRepoPath: cloneResult.localPath,
     });
   } catch (error) {
-    if (error.code === "ECONNABORTED") {
-      return res.status(504).json({
-        success: false,
-        message: "GitHub API request timed out. Please try again.",
-      });
-    }
+    console.error("❌ Repository import failed:", error);
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Failed to import repository",
     });
   }
 };
